@@ -208,69 +208,64 @@ class Program
         {
             string filePath = "goals.txt";
 
-            if (File.Exists(filePath))
+            
+            using (StreamReader reader = new StreamReader(filePath))
             {
-                using (StreamReader reader = new StreamReader(filePath))
+                totalPoints = int.Parse(reader.ReadLine()); // Load total points
+                currentLevel = int.Parse(reader.ReadLine()); // Load current level
+
+                goals.Clear(); // Clear the existing goals list
+
+                // Read each goal from the file
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    totalPoints = int.Parse(reader.ReadLine()); // Load total points
-                    currentLevel = int.Parse(reader.ReadLine()); // Load current level
+                    string[] parts = line.Split('|');
+                    string goalType = parts[0];
+                    string name = parts[1];
+                    string description = parts[2];
+                    int points = int.Parse(parts[3]);
+                    bool finished = bool.Parse(parts[4]);
 
-                    goals.Clear(); // Clear the existing goals list
+                    Goal goal;
 
-                    // Read each goal from the file
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
+                    // Create the appropriate goal type based on file data
+                    if (goalType == nameof(SimpleGoal))
                     {
-                        string[] parts = line.Split('|');
-                        string goalType = parts[0];
-                        string name = parts[1];
-                        string description = parts[2];
-                        int points = int.Parse(parts[3]);
-                        bool finished = bool.Parse(parts[4]);
-
-                        Goal goal;
-
-                        // Create the appropriate goal type based on file data
-                        if (goalType == nameof(SimpleGoal))
-                        {
-                            goal = new SimpleGoal { Name = name, Description = description, Points = points, Finished = finished };
-                        }
-                        else if (goalType == nameof(EternalGoal))
-                        {
-                            goal = new EternalGoal { Name = name, Description = description, Points = points, Finished = finished };
-                        }
-                        else if (goalType == nameof(ChecklistGoal))
-                        {
-                            int currentCount = int.Parse(parts[5]);
-                            int targetCount = int.Parse(parts[6]);
-                            int bonusPoints = int.Parse(parts[7]);
-
-                            goal = new ChecklistGoal
-                            {
-                                Name = name,
-                                Description = description,
-                                Points = points,
-                                Finished = finished,
-                                CurrentCount = currentCount,
-                                TargetCount = targetCount,
-                                BonusPoints = bonusPoints
-                            };
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Unknown goal type found in file.");
-                        }
-
-                        goals.Add(goal);
+                        goal = new SimpleGoal { Name = name, Description = description, Points = points, Finished = finished };
                     }
-                }
+                    else if (goalType == nameof(EternalGoal))
+                    {
+                        goal = new EternalGoal { Name = name, Description = description, Points = points, Finished = finished };
+                    }
+                    else if (goalType == nameof(ChecklistGoal))
+                    {
+                        int currentCount = int.Parse(parts[5]);
+                        int targetCount = int.Parse(parts[6]);
+                        int bonusPoints = int.Parse(parts[7]);
 
-                Console.WriteLine("Goals and progress loaded successfully from the text file.");
+                        goal = new ChecklistGoal
+                        {
+                            Name = name,
+                            Description = description,
+                            Points = points,
+                            Finished = finished,
+                            CurrentCount = currentCount,
+                            TargetCount = targetCount,
+                            BonusPoints = bonusPoints
+                        };
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unknown goal type found in file.");
+                    }
+
+                    goals.Add(goal);
+                }
             }
-            else
-            {
-                Console.WriteLine("No save file found.");
-            }
+
+            Console.WriteLine("Goals and progress loaded successfully from the text file.");
+            
         }
         catch (Exception ex)
         {
